@@ -5,6 +5,8 @@ use std::sync::mpsc::{channel, Sender};
 use std::sync::OnceLock;
 use std::thread;
 use std::{fs, path::Path};
+use clap::Parser;
+use cli::CliArgs;
 use tauri::regex::{escape, Regex};
 
 use tauri::{
@@ -12,6 +14,9 @@ use tauri::{
     Manager,
 };
 use trajoptlib::{HolonomicTrajectory, Pose2d, SwerveDrivetrain, SwerveModule, SwervePathBuilder};
+
+pub(crate) mod cli;
+pub(crate) mod document;
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -286,7 +291,7 @@ async fn generate_trajectory(
     // The handle referring to this path for the solver state callback
     handle: i64,
 ) -> Result<HolonomicTrajectory, String> {
-    let mut path_builder = SwervePathBuilder::new();
+    let mut path_builder: SwervePathBuilder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
@@ -469,6 +474,16 @@ fn solver_status_callback(traj: HolonomicTrajectory, handle: i64) {
     };
 }
 fn main() {
+    let args = CliArgs::parse();
+
+    for file in args.files {
+        
+    }
+
+    if args.background {
+        return;
+    }
+    
     let (tx, rx) = channel::<ProgressUpdate>();
     PROGRESS_SENDER_LOCK.get_or_init(move || tx);
 
